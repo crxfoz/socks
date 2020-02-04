@@ -38,7 +38,7 @@ A complete example using this package:
 		return
 	}
 */
-package socks // import "h12.io/socks"
+package socks
 
 import (
 	"errors"
@@ -90,23 +90,15 @@ func parse(proxyURI string) (*Config, error) {
 		cfg.Auth.Username = uri.User.Username()
 		cfg.Auth.Password, _ = uri.User.Password()
 	}
-	query := uri.Query()
-	timeout := query.Get("timeout")
-	if timeout != "" {
-		var err error
-		cfg.Timeout, err = time.ParseDuration(timeout)
-		if err != nil {
-			return nil, err
-		}
-	}
 	return cfg, nil
 }
 
 // Dial returns the dial function to be used in http.Transport object.
 // Argument proxyURI should be in the format: "socks5://user:password@127.0.0.1:1080?timeout=5s".
 // The protocol could be socks5, socks4 and socks4a.
-func Dial(proxyURI string) func(string, string) (net.Conn, error) {
+func Dial(proxyURI string, timeout time.Duration) func(string, string) (net.Conn, error) {
 	cfg, err := parse(proxyURI)
+	cfg.Timeout = timeout
 	if err != nil {
 		return dialError(err)
 	}
